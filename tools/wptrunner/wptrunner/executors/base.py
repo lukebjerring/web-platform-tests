@@ -1,9 +1,11 @@
 import hashlib
 import httplib
+import json
 import os
 import threading
 import traceback
 import socket
+import urllib
 import urlparse
 from abc import ABCMeta, abstractmethod
 
@@ -148,10 +150,13 @@ class TestExecutor(object):
     def run_test(self, test):
         """Run a particular test.
 
-        :param test: The test to run"""
+        Args:
+            test (Test): The test to run
+        """
         if test.environment != self.last_environment:
             self.on_environment_change(test.environment)
 
+        self.logger.debug("Executing test %s" % test.id)
         try:
             result = self.do_test(test)
         except Exception as e:
@@ -159,6 +164,8 @@ class TestExecutor(object):
 
         if result is Stop:
             return result
+
+        self.log_regressions(test, result)
 
         # log result of parent test
         if result[0].status == "ERROR":
@@ -197,6 +204,25 @@ class TestExecutor(object):
             message += "\n"
         message += traceback.format_exc(e)
         return test.result_cls(status, message), []
+
+    def log_regressions(self, test, result):
+        url = "https://wpt.fyi/latest/chrome/%s" % (test.id)
+        try:
+            response = urllib.urlopen(url)
+            last_run = json.load(response)
+            if last_run:
+                last_status = last_run["status"]
+                parent_status = result[0].status
+                if last_status != parent_status:
+                    msg = "Previous run of %s was %s, but this run was %s" % (test.id, last_status, parent_status)
+                    if last_status == "OK":
+                        self.logger.warning(msg)
+                    else:
+                        self.logger.info(msg)
+                else:
+                    self.logger.info("Previous run of %s was also %s" % (test.id, last_status))
+        except Exception as e:
+            self.logger.warning("Failed to load %s: %s" % (url, getattr(e, "message")))
 
 
 class TestharnessExecutor(TestExecutor):
