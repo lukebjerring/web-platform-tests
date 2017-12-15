@@ -7,8 +7,8 @@ cd $WPT_ROOT
 
 source tools/ci/lib.sh
 
-test_stability() {
-    ./wpt check-stability $PRODUCT --output-bytes $((1024 * 1024 * 3)) --metadata ~/meta/ --install-fonts
+check_regressions() {
+    ./tools/wptrunner/check_regressions.py $PRODUCT --output-bytes $((1024 *1024 * 3))--metadata ~/meta/ --install-fonts
 }
 
 main() {
@@ -16,7 +16,7 @@ main() {
     if [ $(echo $PRODUCT | grep '^chrome:') ]; then
        install_chrome $(echo $PRODUCT | grep --only-matching '\w\+$')
     fi
-    test_stability
+    check_regressions
 }
 
 main
