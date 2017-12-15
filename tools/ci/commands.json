@@ -1,6 +1,33 @@
 {
-    "test-jobs": {"path": "jobs.py", "script": "run", "parser": "create_parser", "help": "List test jobs that should run for a set of commits",
-                  "virtualenv": false},
-    "check-stability": {"path": "check_stability.py", "script": "run", "parser": "get_parser", "parse_known": true, "help": "Check test stability",
-                        "virtualenv": true, "install": ["requests"], "requirements": ["../wptrunner/requirements.txt"]}
+    "test-jobs": {
+        "path": "jobs.py",
+        "script": "run",
+        "parser": "create_parser",
+        "help": "List test jobs that should run for a set of commits",
+        "virtualenv": false
+    },
+    "check-stability": {
+        "path": "check_stability.py",
+        "script": "run",
+        "parser": "get_parser",
+        "parse_known": true,
+        "help": "Check test stability",
+        "virtualenv": true,
+        "install": ["requests"],
+        "requirements": ["../wptrunner/requirements.txt"]
+    },
+    "check-regressions": {
+        "path": "check_regressions.py",
+        "script": "run",
+        "parser": "get_parser",
+        "parse_known": true,
+        "help": "Check for test regressions",
+        "virtualenv": true,
+        "install": [
+            "certifi",
+            "requests",
+            "typing"
+        ],
+        "requirements": ["../wptrunner/requirements.txt"]
+    }
 }
