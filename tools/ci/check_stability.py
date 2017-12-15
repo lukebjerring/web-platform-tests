@@ -3,9 +3,11 @@ from __future__ import print_function
 import argparse
 import logging
 import os
+import state
 import subprocess
 import sys
 from ConfigParser import SafeConfigParser
+from travis import TravisFold
 
 import requests
 
@@ -13,13 +15,9 @@ here = os.path.dirname(__file__)
 wpt_root = os.path.abspath(os.path.join(here, os.pardir, os.pardir))
 sys.path.insert(0, wpt_root)
 
-from tools.wpt import testfiles
-from tools.wpt.testfiles import get_git_cmd
-from tools.wpt.virtualenv import Virtualenv
 from tools.wpt.utils import Kwargs
 from tools.wpt.run import create_parser, setup_wptrunner
 from tools.wpt import markdown
-from tools import localpaths
 
 logger = None
 run, write_inconsistent, write_results = None, None, None
@@ -40,25 +38,6 @@ def do_delayed_imports():
     global run, write_inconsistent, write_results, wptrunner
     from tools.wpt.stability import run, write_inconsistent, write_results
     from wptrunner import wptrunner
-
-
-class TravisFold(object):
-    """Context for TravisCI folding mechanism. Subclasses object.
-
-    See: https://blog.travis-ci.com/2013-05-22-improving-build-visibility-log-folds/
-    """
-
-    def __init__(self, name):
-        """Register TravisCI folding section name."""
-        self.name = name
-
-    def __enter__(self):
-        """Emit fold start syntax."""
-        print("travis_fold:start:%s" % self.name, file=sys.stderr)
-
-    def __exit__(self, type, value, traceback):
-        """Emit fold end syntax."""
-        print("travis_fold:end:%s" % self.name, file=sys.stderr)
 
 
 class FilteredIO(object):
@@ -121,29 +100,6 @@ def call(*args):
         logger.critical(e.output)
         raise
 
-def fetch_wpt(user, *args):
-    git = get_git_cmd(wpt_root)
-    git("fetch", "https://github.com/%s/web-platform-tests.git" % user, *args)
-
-
-def get_sha1():
-    """ Get and return sha1 of current git branch HEAD commit."""
-    git = get_git_cmd(wpt_root)
-    return git("rev-parse", "HEAD").strip()
-
-
-def install_wptrunner():
-    """Install wptrunner."""
-    call("pip", "install", wptrunner_root)
-
-
-def deepen_checkout(user):
-    """Convert from a shallow checkout to a full one"""
-    fetch_args = [user, "+refs/heads/*:refs/remotes/origin/*"]
-    if os.path.exists(os.path.join(wpt_root, ".git", "shallow")):
-        fetch_args.insert(1, "--unshallow")
-    fetch_wpt(*fetch_args)
-
 
 def get_parser():
     """Create and return script-specific argument parser."""
@@ -193,11 +149,6 @@ def set_default_args(kwargs):
                        os.environ.get("SAUCE_ACCESS_KEY"))
 
 
-def pr():
-    pr = os.environ.get("TRAVIS_PULL_REQUEST", "false")
-    return pr if pr != "false" else None
-
-
 def post_results(results, pr_number, iterations, product, url, status):
     """Post stability results to a given URL."""
     payload_results = []
@@ -244,32 +195,9 @@ def post_results(results, pr_number, iterations, product, url, status):
     requests.post(url, json=payload)
 
 
-def get_changed_files(manifest_path, rev, ignore_changes, skip_tests):
-    if not rev:
-        branch_point = testfiles.branch_point()
-        revish = "%s..HEAD" % branch_point
-    else:
-        revish = rev
-
-    files_changed, files_ignored = testfiles.files_changed(revish, ignore_changes)
-
-    if files_ignored:
-        logger.info("Ignoring %s changed files:\n%s" %
-                    (len(files_ignored), "".join(" * %s\n" % item for item in files_ignored)))
-
-    tests_changed, files_affected = testfiles.affected_testfiles(files_changed, skip_tests,
-                                                                 manifest_path=manifest_path)
-
-    return tests_changed, files_affected
-
-
 def main():
     """Perform check_stability functionality and return exit code."""
-
-    venv = Virtualenv(os.environ.get("VIRTUAL_ENV", os.path.join(wpt_root, "_venv")))
-    venv.install_requirements(os.path.join(wpt_root, "tools", "wptrunner", "requirements.txt"))
-    venv.install("requests")
-
+    venv = state.setup_venv()
     args, wpt_args = get_parser().parse_known_args()
     return run(venv, wpt_args, **vars(args))
 
@@ -310,25 +238,26 @@ def run(venv, wpt_args, **kwargs):
         logger.warning("Cannot run tests on Sauce Labs. No access key.")
         return retcode
 
-    pr_number = pr()
+    pr_number = state.pr()
 
     with TravisFold("browser_setup"):
         logger.info(markdown.format_comment_title(wpt_args.product))
 
-        if pr is not None:
-            deepen_checkout(kwargs["user"])
+        if state.pr is not None:
+            state.deepen_checkout(kwargs["user"])
 
         # Ensure we have a branch called "master"
-        fetch_wpt(kwargs["user"], "master:master")
+        state.fetch_wpt(kwargs["user"], "master:master")
 
-        head_sha1 = get_sha1()
+        head_sha1 = state.get_sha1()
         logger.info("Testing web-platform-tests at revision %s" % head_sha1)
 
         wpt_kwargs = Kwargs(vars(wpt_args))
 
         if not wpt_kwargs["test_list"]:
             manifest_path = os.path.join(wpt_kwargs["metadata_root"], "MANIFEST.json")
-            tests_changed, files_affected = get_changed_files(manifest_path, kwargs["rev"],
+            tests_changed, files_affected = state.get_changed_files(
+                manifest_path, kwargs["rev"],
                                                               ignore_changes, skip_tests)
 
             if not (tests_changed or files_affected):
