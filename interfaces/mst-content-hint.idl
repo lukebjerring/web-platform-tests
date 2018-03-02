@@ -1,0 +1,4 @@
+
+    partial interface MediaStreamTrack {
+      attribute DOMString contentHint;
+    };
