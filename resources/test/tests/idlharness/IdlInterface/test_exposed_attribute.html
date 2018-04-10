@@ -29,16 +29,30 @@
     test(function () {
       const idlArray = new IdlArray();
       idlArray.add_idls(`
-        [Exposed=(Window,Worker)]
-        interface Document {};
+          [Exposed=Window]
+          interface NodeList {};
 
-        [Exposed=(Window)]
-        partial interface Document {
-          readonly attribute boolean Foo;
-        };
-      `);
-      idlArray.test();
-    }, 'should not throw for exposed attribute on partial.');
+          [Exposed=(Window,Worker)]
+          partial interface NodeList {
+            readonly attribute unsigned long length;
+          };
+        `);
+      idlArray.assert_throws('Foo', i => i.test());
+    }, 'should throw for non-subset exposed attribute on partial.');
+
+    // test(function () {
+    //   const idlArray = new IdlArray();
+    //   idlArray.add_idls(`
+    //     [Exposed=Window]
+    //     interface NodeList {};
+
+    //     [Exposed=Window]
+    //     partial interface NodeList {
+    //       readonly attribute unsigned long length;
+    //     };
+    //   `);
+    //   idlArray.test();
+    // }, 'should not throw for exposed attribute on partial.');
   </script>
 </body>
 

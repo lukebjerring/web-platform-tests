@@ -553,12 +553,14 @@ IdlArray.prototype.is_json_type = function(type)
 };
 
 function exposure_set(object, default_set) {
-    var exposed = object.extAttrs.filter(function(a) { return a.name == "Exposed" });
+    var exposed = object.extAttrs.filter(function(a) {
+        return a.name == "Exposed"
+    });
     if (exposed.length > 1) {
         throw new IdlHarnessError(
             `Multiple 'Exposed' extended attributes on ${object.name}`);
     }
-
+    
     if (exposed.length === 0) {
         return default_set;
     }
@@ -636,16 +638,15 @@ IdlArray.prototype.test = function()
         {
             throw new IdlHarnessError(`Partial ${parsed_idl.type} ${parsed_idl.name} with no original ${parsed_idl.type}`);
         }
-        if (parsed_idl.extAttrs)
-        {
-            parsed_idl.extAttrs.forEach(function(extAttr)
-            {
-                this.members[parsed_idl.name].extAttrs.push(extAttr);
-            }.bind(this));
-        }
         parsed_idl.members.forEach(function(member)
         {
-            this.members[parsed_idl.name].members.push(new IdlInterfaceMember(member));
+            var member = new IdlInterfaceMember(member);
+            if (parsed_idl.extAttrs) {
+                parsed_idl.extAttrs.forEach(function (extAttr) {
+                    member.extAttrs.push(extAttr);
+                }.bind(this));
+            }
+            this.members[parsed_idl.name].members.push(member);
         }.bind(this));
     }.bind(this));
     this.partials = [];
