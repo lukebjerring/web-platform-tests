@@ -1,7 +1,3 @@
-// GENERATED CONTENT - DO NOT EDIT
-// Content of this file was automatically extracted from the
-// "Selection API" spec.
-// See: https://w3c.github.io/selection-api/
 
 interface Selection {
     readonly attribute Node?         anchorNode;
