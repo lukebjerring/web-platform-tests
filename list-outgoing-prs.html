@@ -1,0 +1,33 @@
+<pre id='output'></pre>
+
+<script>
+(async () => {
+  const output = document.querySelector('#output');
+  let page = 1;
+  while (true) {
+    const r = await fetch(
+        `https://api.github.com/repos/web-platform-tests/wpt/pulls?state=open&head=lukebjerring&page=${page}`,
+        {
+          headers: {
+            Authorization: 'token 0f074a83dc2712da2d34abcec3bf0dca6d65156d',
+          }
+        });
+    if (!r.ok) {
+      console.log(`Page ${page} failed. Stopping.`);
+      break;
+    }
+    const branches = await r.json();
+    if (!branches.length) {
+      console.log(`Page ${page} empty. Stopping.`);
+      break;
+    }
+
+    for (const branch of branches
+            .map(pr => pr.head.ref)
+            .filter(r => r.includes("idl-file-updates"))) {
+      output.innerText = output.innerText + `${branch}\n`;
+    }
+    page++;
+  }
+})()
+</script>
