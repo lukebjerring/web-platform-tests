@@ -72,7 +72,7 @@ jobs:
     displayName: 'Run tests'
     condition: variables.run_tests
   - task: PublishBuildArtifacts@1
-    condition: condition: succeededOrFailed()
+    condition: succeededOrFailed()
 
 - job: infrastructure_macOS
   displayName: 'infrastructure/ tests (macOS)'
