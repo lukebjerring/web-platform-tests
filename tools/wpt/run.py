@@ -491,18 +491,25 @@ def setup_wptrunner(venv, prompt=True, install_browser=False, **kwargs):
     setup_cls = product_setup[kwargs["product"]](venv, prompt, sub_product)
     setup_cls.install_requirements()
 
-    affected_revish = kwargs.pop("affected", None)
-    if affected_revish is not None:
-        files_changed, _ = testfiles.files_changed(affected_revish, include_uncommitted=True, include_new=True)
+    if kwargs["affected"]:
+        revish = kwargs["affected"]
+        files_changed, _ = testfiles.files_changed(revish, include_uncommitted=True, include_new=True)
         # TODO: honor --no-manifest-update and other manifest args
-        tests_changed, tests_affected = testfiles.affected_testfiles(files_changed)
-        test_list = tests_changed | tests_affected
+        tests_changed, tests_affected = testfiles.affected_testfiles(
+            files_changed,
+            set(["conformance-checkers", "docs", "tools"]), # TODO: dedupe
+        )
+        test_list = list(tests_changed | tests_affected)
         if not test_list:
             # TODO: make something show up in all loggers, and also still write wpt_report.json?
             logger.info("no affected tests")
             sys.exit(1)
         test_list = [os.path.relpath(item, wpt_root) for item in test_list]
-        kwargs["test_list"] += test_list
+        test_list.sort()
+        if len(kwargs["test_list"]):
+            logger.warning("ignoring test list because --affected")
+        kwargs["test_list"] = test_list
+    del kwargs["affected"]
 
     if install_browser and not kwargs["channel"]:
         logger.info("--install-browser is given but --channel is not set, default to nightly channel")
