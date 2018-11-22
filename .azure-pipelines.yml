@@ -61,16 +61,8 @@ jobs:
   - template: tools/ci/azure/install_certs.yml
   - template: tools/ci/azure/install_safari.yml
   - template: tools/ci/azure/update_hosts.yml
-  - template: tools/ci/azure/update_manifest.yml
-  - script: |
-      ./wpt tests-affected | tee $(Build.ArtifactStagingDirectory)/tests_affected.txt
-      if [ -s $(Build.ArtifactStagingDirectory)/tests_affected.txt ]; then
-        echo "##vso[task.setvariable variable=run_tests]true";
-      fi
-    displayName: 'List tests'
-  - script: no_proxy='*' ./wpt run --yes --no-manifest-update --no-pause --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari_webdriver old-tests/submission/Microsoft/selection/collapseToEnd.htm
+  - script: no_proxy='*' ./wpt run --yes --no-pause --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari_webdriver --affected HEAD^1
     displayName: 'Run tests'
-    condition: variables.run_tests
   - task: PublishBuildArtifacts@1
     displayName: 'Publish results'
     condition: succeededOrFailed()
