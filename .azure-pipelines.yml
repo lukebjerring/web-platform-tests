@@ -67,6 +67,30 @@ jobs:
     displayName: 'Publish results'
     condition: succeededOrFailed()
 
+- job: affected_sans_changes_macOS
+  displayName: 'affected tests without changes (Safari Technology Preview)'
+  #dependsOn: root
+  #condition: dependencies.root.outputs['test_jobs.stability']
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - template: tools/ci/azure/checkout.yml
+  # check out first parent, which is the target branch
+  - script: git checkout HEAD^1
+    displayName: 'Checkout target branch'
+  - template: tools/ci/azure/pip_install.yml
+    parameters:
+      packages: virtualenv
+  - template: tools/ci/azure/install_fonts.yml
+  - template: tools/ci/azure/install_certs.yml
+  - template: tools/ci/azure/install_safari.yml
+  - template: tools/ci/azure/update_hosts.yml
+  - script: no_proxy='*' ./wpt run --yes --no-pause --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari_webdriver --affected HEAD@{1}
+    displayName: 'Run tests'
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish results'
+    condition: succeededOrFailed()
+
 - job: infrastructure_macOS
   displayName: 'infrastructure/ tests (macOS)'
   dependsOn: root
