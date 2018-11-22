@@ -162,9 +162,8 @@ def exclude_ignored(files, ignore_rules):
 
 
 def files_changed(revish, ignore_rules=None, include_uncommitted=False, include_new=False):
-    """Get and return files changed since current branch diverged from master,
-    excluding those that are located within any path matched by
-    `ignore_rules`."""
+    """Get and return files changed since `revish`, excluding those that are
+    located within any path matched by `ignore_rules`."""
     files = repo_files_changed(revish,
                                include_uncommitted=include_uncommitted,
                                include_new=include_new)
