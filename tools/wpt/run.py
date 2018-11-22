@@ -8,7 +8,7 @@ from six.moves import input
 wpt_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 sys.path.insert(0, os.path.abspath(os.path.join(wpt_root, "tools")))
 
-from . import browser, install, utils, virtualenv
+from . import browser, install, testfiles, utils, virtualenv
 from ..serve import serve
 
 logger = None
@@ -45,6 +45,8 @@ def create_parser():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("product", action="store",
                         help="Browser to run tests in")
+    parser.add_argument("--affected", action="store", default=None,
+                        help="Run affected tests since revish")
     parser.add_argument("--yes", "-y", dest="prompt", action="store_false", default=True,
                         help="Don't prompt before installing components")
     parser.add_argument("--install-browser", action="store_true",
@@ -488,6 +490,26 @@ def setup_wptrunner(venv, prompt=True, install_browser=False, **kwargs):
 
     setup_cls = product_setup[kwargs["product"]](venv, prompt, sub_product)
     setup_cls.install_requirements()
+
+    if kwargs["affected"]:
+        revish = kwargs["affected"]
+        files_changed, _ = testfiles.files_changed(revish, include_uncommitted=True, include_new=True)
+        # TODO: honor --no-manifest-update and other manifest args
+        tests_changed, tests_affected = testfiles.affected_testfiles(
+            files_changed,
+            set(["conformance-checkers", "docs", "tools"]), # TODO: dedupe
+        )
+        test_list = list(tests_changed | tests_affected)
+        if not test_list:
+            # TODO: make something show up in all loggers, and also still write wpt_report.json?
+            logger.info("no affected tests")
+            sys.exit(1)
+        test_list = [os.path.relpath(item, wpt_root) for item in test_list]
+        test_list.sort()
+        if len(kwargs["test_list"]):
+            logger.warning("ignoring test list because --affected")
+        kwargs["test_list"] = test_list
+    del kwargs["affected"]
 
     if install_browser and not kwargs["channel"]:
         logger.info("--install-browser is given but --channel is not set, default to nightly channel")
