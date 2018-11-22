@@ -68,7 +68,7 @@ jobs:
         echo "##vso[task.setvariable variable=run_tests]true";
       fi
     displayName: 'List tests'
-  - script: no_proxy='*' ./wpt run --yes --no-manifest-update --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari_webdriver `cat $(Build.ArtifactStagingDirectory)/affected_tests.txt`
+  - script: no_proxy='*' ./wpt run --yes --no-manifest-update --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari_webdriver old-tests/submission/Microsoft/selection/collapseToEnd.htm
     displayName: 'Run tests'
     condition: variables.run_tests
   - task: PublishBuildArtifacts@1
