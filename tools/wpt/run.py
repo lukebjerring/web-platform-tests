@@ -491,9 +491,9 @@ def setup_wptrunner(venv, prompt=True, install_browser=False, **kwargs):
     setup_cls = product_setup[kwargs["product"]](venv, prompt, sub_product)
     setup_cls.install_requirements()
 
-    if kwargs["affected"]:
-        revish = kwargs["affected"]
-        files_changed, _ = testfiles.files_changed(revish, include_uncommitted=True, include_new=True)
+    affected_revish = kwargs.pop("affected", None)
+    if affected_revish is not None:
+        files_changed, _ = testfiles.files_changed(affected_revish, include_uncommitted=True, include_new=True)
         # TODO: honor --no-manifest-update and other manifest args
         tests_changed, tests_affected = testfiles.affected_testfiles(
             files_changed,
@@ -509,7 +509,6 @@ def setup_wptrunner(venv, prompt=True, install_browser=False, **kwargs):
         if len(kwargs["test_list"]):
             logger.warning("ignoring test list because --affected")
         kwargs["test_list"] = test_list
-    del kwargs["affected"]
 
     if install_browser and not kwargs["channel"]:
         logger.info("--install-browser is given but --channel is not set, default to nightly channel")
