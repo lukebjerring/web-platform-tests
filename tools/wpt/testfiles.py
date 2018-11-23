@@ -199,9 +199,10 @@ def _init_manifest_cache():
 
 load_manifest = _init_manifest_cache()
 
-
-def affected_testfiles(files_changed, skip_tests, manifest_path=None):
+def affected_testfiles(files_changed, skip_dirs=None, manifest_path=None):
     """Determine and return list of test files that reference changed files."""
+    if skip_dirs is None:
+        skip_dirs = set(["conformance-checkers", "docs", "tools"])
     affected_testfiles = set()
     # Exclude files that are in the repo root, because
     # they are not part of any test.
@@ -232,7 +233,7 @@ def affected_testfiles(files_changed, skip_tests, manifest_path=None):
         rel_path = os.path.relpath(full_path, wpt_root)
         path_components = rel_path.split(os.sep)
         top_level_subdir = path_components[0]
-        if top_level_subdir in skip_tests:
+        if top_level_subdir in skip_dirs:
             continue
         repo_path = "/" + os.path.relpath(full_path, wpt_root).replace(os.path.sep, "/")
         if repo_path in rewrites:
@@ -271,7 +272,7 @@ def affected_testfiles(files_changed, skip_tests, manifest_path=None):
         # Walk top_level_subdir looking for test files containing either the
         # relative filepath or absolute filepath to the changed files.
         if root == wpt_root:
-            for dir_name in skip_tests:
+            for dir_name in skip_dirs:
                 dirs.remove(dir_name)
         for fname in fnames:
             test_full_path = os.path.join(root, fname)

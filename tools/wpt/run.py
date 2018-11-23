@@ -495,10 +495,7 @@ def setup_wptrunner(venv, prompt=True, install_browser=False, **kwargs):
     if affected_revish is not None:
         files_changed, _ = testfiles.files_changed(affected_revish, include_uncommitted=True, include_new=True)
         # TODO: honor --no-manifest-update and other manifest args
-        tests_changed, tests_affected = testfiles.affected_testfiles(
-            files_changed,
-            set(["conformance-checkers", "docs", "tools"]), # TODO: dedupe
-        )
+        tests_changed, tests_affected = testfiles.affected_testfiles(files_changed)
         test_list = tests_changed | tests_affected
         if not test_list:
             # TODO: make something show up in all loggers, and also still write wpt_report.json?
