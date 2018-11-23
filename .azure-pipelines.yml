@@ -61,7 +61,7 @@ jobs:
   - template: tools/ci/azure/install_certs.yml
   - template: tools/ci/azure/install_safari.yml
   - template: tools/ci/azure/update_hosts.yml
-  - script: no_proxy='*' ./wpt run --yes --no-pause --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari --affected HEAD^1
+  - script: no_proxy='*' ./wpt run --yes --no-pause --no-fail-on-unexpected --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari --affected HEAD^1
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish results'
@@ -85,7 +85,7 @@ jobs:
   - template: tools/ci/azure/install_certs.yml
   - template: tools/ci/azure/install_safari.yml
   - template: tools/ci/azure/update_hosts.yml
-  - script: no_proxy='*' ./wpt run --yes --no-pause --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari --affected HEAD@{1}
+  - script: no_proxy='*' ./wpt run --yes --no-pause --no-fail-on-unexpected --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari --affected HEAD@{1}
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish results'
