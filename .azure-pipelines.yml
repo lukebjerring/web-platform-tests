@@ -65,8 +65,9 @@ jobs:
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish results'
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
-    artifactName: 'report'
+    input:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
+      artifactName: 'report'
     condition: succeededOrFailed()
 
 - job: affected_sans_changes_macOS
@@ -90,8 +91,10 @@ jobs:
   - script: no_proxy='*' ./wpt run --yes --no-pause --no-fail-on-unexpected --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari --affected HEAD@{1}
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
-    pathToPublish:  $(Build.ArtifactStagingDirectory)/wpt_report.json
-    displayNdisplayNameame: 'Publish results'
+    displayName: 'Publish results'
+    input:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
+      artifactName: 'report'
     condition: succeededOrFailed()
 
 - job: infrastructure_macOS
