@@ -66,6 +66,8 @@ jobs:
   - task: PublishBuildArtifacts@1
     pathToPublish:  $(Build.ArtifactStagingDirectory)/wpt_report.json
     displayName: 'Publish results'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
+    artifactName: 'report'
     condition: succeededOrFailed()
 
 - job: affected_sans_changes_macOS
