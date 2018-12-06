@@ -65,7 +65,7 @@ jobs:
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish results'
-    input:
+    inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
       artifactName: 'report'
     condition: succeededOrFailed()
@@ -92,7 +92,7 @@ jobs:
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish results'
-    input:
+    inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
       artifactName: 'report'
     condition: succeededOrFailed()
