@@ -67,7 +67,7 @@ jobs:
     displayName: 'Publish results'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
-      artifactName: 'report'
+      artifactName: 'results'
     condition: succeededOrFailed()
 
 - job: affected_sans_changes_macOS
@@ -94,7 +94,7 @@ jobs:
     displayName: 'Publish results'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
-      artifactName: 'report'
+      artifactName: 'results-without-patch'
     condition: succeededOrFailed()
 
 - job: infrastructure_macOS
