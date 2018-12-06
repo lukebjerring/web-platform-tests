@@ -64,7 +64,6 @@ jobs:
   - script: no_proxy='*' ./wpt run --yes --no-pause --no-fail-on-unexpected --no-restart-on-unexpected --log-wptreport $(Build.ArtifactStagingDirectory)/wpt_report.json --channel preview safari --affected HEAD^1
     displayName: 'Run tests'
   - task: PublishBuildArtifacts@1
-    pathToPublish:  $(Build.ArtifactStagingDirectory)/wpt_report.json
     displayName: 'Publish results'
     pathtoPublish: '$(Build.ArtifactStagingDirectory)/wpt_report.json'
     artifactName: 'report'
