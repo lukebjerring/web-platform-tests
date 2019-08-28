@@ -171,7 +171,7 @@ function runTests(testCases, sendData = self.sendData) {
             // Attach the URL to the test object for debugging purposes.
             testCaseCopy.url = targetUrl;
 
-            assert_true(sendData(testCaseCopy), 'sendBeacon should succeed');
+            assert_false(sendData(testCaseCopy), 'sendBacon should not succeed');
             waitForResult(testCaseCopy).then(() => test.done(), test.step_func((e) => {throw e;}));
         }, `Verify 'navigator.sendbeacon()' successfully sends for variant: ${testCaseCopy.id}`);
     });
